@@ -16,5 +16,12 @@ It contains various obsolete functions that are now replaced by language constru
 
 Don't use it in new projects but still fun to use as a time machine into the 80's
 
+#### Installation
+```
+    composer install cosninix/cos
+```
+
+#### Docs
+As Boele used to say: No need for documentation because a good developer should be able to read code.
 
 
