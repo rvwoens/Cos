@@ -1,7 +1,11 @@
 /vendor/
+build/
+.idea/
 node_modules/
 npm-debug.log
 yarn-error.log
+# include composer.lock for CI to work
+# composer.lock
 
 # Laravel 4 specific
 bootstrap/compiled.php

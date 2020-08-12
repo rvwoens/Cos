@@ -1,0 +1,41 @@
+{
+    "name": "cosninix/cos",
+    "description": "Very legacy collection of various utility functions",
+    "type": "library",
+    "require": {
+        "php": "^7.0.0",
+        "illuminate/support": "^5.0|^6.0|^7.0|^8.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^3.4",
+        "phpunit/phpunit": "^7.5",
+        "friendsofphp/php-cs-fixer": "^2.16",
+        "phpmd/phpmd": "^2.8"
+    },
+    "license": "MIT",
+    "keywords": [
+        "library",
+        "legacy"
+    ],
+    "authors": [
+        {
+            "name": "Ronald van Woensel",
+            "email": "rvw@cosninix.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Cosninix\\Cos\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Cosninix\\Cos\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit",
+        "fix": "vendor/bin/php-cs-fixer fix -v",
+        "smell": "vendor/bin/phpmd src text phpmd-rules.xml"
+    }
+}
