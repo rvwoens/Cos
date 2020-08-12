@@ -5,6 +5,7 @@
 [![Last commit](https://img.shields.io/github/last-commit/rvwoens/cos)](https://github.com/rvwoens/cos)
 [![Status](https://img.shields.io/badge/status-legacy-red)](https://github.com/rvwoens/cos)
 [![License](https://poser.pugx.org/cosninix/cos/license)](//packagist.org/packages/cosninix/cos)
+[![Actions Status](https://github.com/rvwoens/cos/workflows/Build/badge.svg)](https://github.com/rvwoens/cos/actions)
 
 
 ## Why? [![start with why](https://img.shields.io/badge/start%20with-why%3F-brightgreen.svg?style=flat)](http://www.ted.com/talks/simon_sinek_how_great_leaders_inspire_action)
