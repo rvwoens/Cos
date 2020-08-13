@@ -2,6 +2,7 @@
 
 use Config;
 use Exception;
+use InvalidArgumentException;
 use Log;
 use Illuminate\Database\QueryException;
 
@@ -131,16 +132,70 @@ class Cos {
 	}
 
 	/**
-	 * Mysql-UQ unsafe mysql quoter
-	 * @param $value
-	 * @param string $cast
+	 * Sanitize a utf8 string. Remove invalid sequences and invalid control characters
+	 * @param $dirty
 	 * @return string
 	 */
-	public static function muq($value, $cast = '') {    // mysql quoter
+	public static function sanitizeString($dirty) {
+		// 	Valid utf8 consists of
+		//		0xxxxxxx
+		//		110xxxxx 10xxxxxx
+		//		1110xxxx 10xxxxxx 10xxxxxx
+		//		11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+		$len = strlen($dirty);
+		$clean='';
+		$checkUtf8Seq=0; $utf8Seq='';
+		for($i = 0; $i < $len; $i++){
+			$ch=$dirty[$i];
+			$c = ord($ch);
+			if ($checkUtf8Seq>0) {
+				if ($c < 0x80 || $c >= 0xc0) {
+					$checkUtf8Seq=0;	// reset
+					continue;
+				}
+				$utf8Seq.=$ch;
+				if (--$checkUtf8Seq == 0) {
+					$clean .= $utf8Seq;    // full clean utf8 sequence
+					$utf8Seq='';
+				}
+			}
+			elseif ($c >= 0x80) {
+				if ($c >= 0xf8)
+					continue;                        		// above 1111 1xxx
+				elseif ($c >= 0xf0) $checkUtf8Seq = 3;      // above 1111 0xxx
+				elseif ($c >= 0xe0) $checkUtf8Seq = 2;      // above 1110 0xxx
+				elseif ($c >= 0xc0) $checkUtf8Seq = 1;      // above 1100 0xxx
+				else
+					continue;                        		// below 1100 0000 above 1000 0000 is invalid as startbyte
+				$utf8Seq=$ch;
+			}
+			elseif ($c < 0x20) {
+				// only allow a limited set of control characters
+				if (!in_array($c, [ 0x09, 0x0a, 0x0d, 0x1b ]))	// TAB, LF, CR, ESC
+					continue;
+				$clean.=$ch;	// valid
+			}
+			else
+				$clean.=$ch;	// valid
+		}
+		return $clean;
+	}
+
+	/**
+	 * Mysql-UQ safe mysql quoter (utf8).
+	 * @param $value
+	 * @param string $cast
+	 * @throws Exception
+	 * @return string
+	 */
+	public static function muq($value, $cast = '') {
+		if (is_object($value) || is_array($value))
+			throw new InvalidArgumentException("Muq: can't process object or array");
+		if (is_string($value))
+			$value=static::sanitizeString($value);	// sanitize to prevent sql-injections
 		// Quote if not a number or a numeric string
 		if (!is_numeric($value) || $cast == 'string') {
-			//$value = "'" . mysql_real_escape_string($value) . "'";    // no longer exists
-			$value = "'".addslashes($value)."'";    // unsafe: sql-injections possible
+			$value = "'".addslashes($value)."'";    // sanitized so safe to use addslashes
 		}
 		return $value;
 	}
@@ -611,7 +666,7 @@ class Cos {
 
 	}
 
-	const encodeKey = "chengethistoYOURkey";
+	const encodeKey = "changethistoYOURkey";
 
 	/**
 	 * encode a numeric id or string to a checked hash string
