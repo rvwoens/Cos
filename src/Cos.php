@@ -148,8 +148,9 @@ class Cos {
 		for($i = 0; $i < $len; $i++){
 			$ch=$dirty[$i];
 			$c = ord($ch);
-			if ($checkUtf8Seq>0) {
-				if ($c < 0x80 || $c >= 0xc0) {
+			// 1 or more utf8 sequence characters to check
+			if ($checkUtf8Seq>=1) {
+				if ($c < 0x80 || $c >= 0xc0) {			  // above 10xx xxxx below 1100 0000 is valid
 					$checkUtf8Seq=0;	// reset
 					continue;
 				}
@@ -182,26 +183,31 @@ class Cos {
 	}
 
 	/**
-	 * Mysql-UQ safe mysql quoter (utf8).
+	 * Mysql-UQ mysql quoter (utf8).
+	 * Alternative to the obsolete mysql_real_escape_string and mysqli_real_escape_string
+	 * Mysql must be configured utf8
 	 * @param $value
 	 * @param string $cast
 	 * @throws Exception
 	 * @return string
 	 */
-	public static function muq($value, $cast = '') {
+	public static function muq($value, $cast = null) {
 		if (is_object($value) || is_array($value))
 			throw new InvalidArgumentException("Muq: can't process object or array");
+
 		if (is_string($value))
 			$value=static::sanitizeString($value);	// sanitize to prevent sql-injections
+
 		// Quote if not a number or a numeric string
 		if (!is_numeric($value) || $cast == 'string') {
+			// put single quotes around it.
 			$value = "'".addslashes($value)."'";    // sanitized so safe to use addslashes
 		}
 		return $value;
 	}
 
 	public static function jsEscape($s) {
-		return json_encode($s);    // best way to escape for js is to json_encode it  ( jaja's => "jaja\'s" )
+		return json_encode($s);
 	}
 
 	/**
@@ -226,7 +232,6 @@ class Cos {
 	}
 
 	public static function LogException($exception, $extra = "") {
-		//Log::error($exception); rvwrvw:
 		$pathInfo = Request::getPathInfo();
 		$message = $exception->getMessage() ?: 'Exception';
 
@@ -310,8 +315,9 @@ class Cos {
 		case 'x':
 		case 'X':
 			$rv = '';
-			$sorg = strtr($sorg, "-_./",        // these 'dot-like' characters all become dots
-						  "....");
+			$sorg = strtr($sorg,
+							"-_./",        // these 'dot-like' characters all become dots
+							"....");
 			for ($i = 0; $i < strlen($sorg); $i++) {
 				$ch = $sorg[$i];
 				// all other characters are removed
